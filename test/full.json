@@ -1,0 +1,14 @@
+{
+  "api_version": 1,
+  "codename": "full_plugin",
+  "name": "Full Plugin",
+  "description": "Example for all available fields in Voxelite's plugin.json",
+  "version": "0.1.0",
+  "author": [ "me", "myself", "and I" ],
+  "website": "https://example.com",
+  "permissions": [
+    "network.http",
+    "lua_sandbox",
+    "permissions.define.plugin"
+  ]
+}

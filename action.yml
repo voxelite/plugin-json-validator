@@ -1,0 +1,13 @@
+name: 'Voxelite plugin.json validator'
+description: 'Validate your plugin.json file'
+inputs:
+  file:
+    description: 'File to check'
+    required: true
+    default: 'plugin.json'
+  official:
+    description: 'Set to `true` for official plugins, otherwise shows some warning when the plugin looks too official'
+    default: 'false'
+runs:
+  using: 'node20'
+  main: 'index.js'

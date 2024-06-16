@@ -1,0 +1,19 @@
+on: [push]
+
+jobs:
+  plugin_json:
+    runs-on: ubuntu-latest
+    name: Test some plugin.json files
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test minimal.json
+        uses: ./
+        with:
+          file: test/minimal.json
+
+      - name: Test full.json
+        uses: ./
+        with:
+          file: test/full.json
