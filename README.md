@@ -1,12 +1,20 @@
 # Voxelite plugin.json Validator
 
-This action prints "Hello World" or "Hello" + the name of a person to greet to the log.
+GitHub Action to validate [Voxelite](https://github.com/voxelite)'s `plugin.json` (main information about the plugin).
+
+Checks:
+- Presence of all required fields
+- Valid characters (especially for plugin's codename)
+- Impersonation prevention
 
 ## Inputs
 
 ### `file`
 
-**Required** Path to your `plugin.json`. Default `"plugin.json"` (=root directory of your repository).
+**Required**
+
+Path to your `plugin.json`.
+Default `"plugin.json"` (=in root directory of your repository).
 
 ### `official`
 
@@ -16,7 +24,8 @@ Causes the validator to not check against official names.
 ## Example usage
 
 ```yaml
-uses: voxelite/plugin-json-validator
+- name: plugin.json validation
+  uses: voxelite/plugin-json-validator@v1
 ```
 
 For `plugin.json` format look into official documentation, some examples can be found in [test directory](test).
