@@ -9,11 +9,25 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Test minimal.json
+        id: minimal_json
         uses: ./
         with:
           file: test/minimal.json
 
+      - name: Print minimal.json info
+        shell: bash
+        run: |
+          echo "Codename: ${{steps.minimal_json.outputs.codename}}"
+          echo "Version: ${{steps.minimal_json.outputs.version}}"
+
       - name: Test full.json
+        id: full_json
         uses: ./
         with:
           file: test/full.json
+
+      - name: Print full.json info
+        shell: bash
+        run: |
+          echo "Codename: ${{steps.full_json.outputs.codename}}"
+          echo "Version: ${{steps.full_json.outputs.version}}"

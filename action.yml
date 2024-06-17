@@ -8,6 +8,11 @@ inputs:
   official:
     description: 'Set to `true` for official plugins, otherwise shows some warning when the plugin looks too official'
     default: 'false'
+outputs:
+  codename:
+    description: 'Plugin codename'
+  version:
+    description: 'Plugin version'
 runs:
   using: 'node20'
   main: 'index.js'

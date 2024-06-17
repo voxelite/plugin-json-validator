@@ -397,14 +397,20 @@ try
                     if(!json.hasOwnProperty("codename"))
                         core.error('Missing `codename`');
                     else
+                    {
                         checkCodename(json['codename']);
+                        core.setOutput('codename', json['codename']);
+                    }
                 }
                 // version
                 {
                     if(!json.hasOwnProperty("version"))
                         core.error('Missing `version`');
                     else
+                    {
                         checkVersion(json['version']);
+                        core.setOutput('version', json['version']);
+                    }
                 }
                 // name
                 {
