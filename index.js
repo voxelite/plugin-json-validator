@@ -71,6 +71,31 @@ function checkCodename(codename)
             core.warning("It looks like you are using `codename` similar to official Voxelite ones, please choose a different prefix");
     }
 }
+function validateNonPrintCharacter(field, value)
+{
+    for(let i = 0; i < value.length; i++)
+    {
+        const c = value.charCodeAt(i);
+        if(c < 32 /* space character */)
+        {
+            if(c === 13 /* \r */ || c === 10 /* \n */)
+            {
+                core.error(field + " cannot contain a new line");
+                return;
+            }
+            else if(c === 9 /* \t */)
+            {
+                core.error(field + " cannot contain tab character");
+                return;
+            }
+            else
+            {
+                core.error(field + " cannot contain non-printable character (first 32 ASCII characters) - found character " + c);
+                return;
+            }
+        }
+    }
+}
 function checkName(name)
 {
     if(typeof name !== "string")
@@ -97,28 +122,7 @@ function checkName(name)
     if(name.indexOf("  ") !== -1)
         core.warning("`name` should not contain multiple consecutive space characters");
 
-    for(let i = 0; i < name.length; i++)
-    {
-        const c = name.charCodeAt(i);
-        if(c < 32 /* space character */)
-        {
-            if(c === 13 /* \r */ || c === 10 /* \n */)
-            {
-                core.error("`name` cannot contain a new line");
-                return;
-            }
-            else if(c === 9 /* \t */)
-            {
-                core.error("`name` cannot contain tab character");
-                return;
-            }
-            else
-            {
-                core.error("`name` cannot contain non-printable character (first 32 ASCII characters) - found character " + c);
-                return;
-            }
-        }
-    }
+    validateNonPrintCharacter('`name`', name);
 }
 function checkVersion(version)
 {
@@ -170,28 +174,7 @@ function checkDescription(description)
     if(description.indexOf("  ") !== -1)
         core.warning("`description` should not contain multiple consecutive space characters");
 
-    for(let i = 0; i < description.length; i++)
-    {
-        const c = description.charCodeAt(i);
-        if(c < 32 /* space character */)
-        {
-            if(c === 13 /* \r */ || c === 10 /* \n */)
-            {
-                core.error("`description` cannot contain a new line");
-                return;
-            }
-            else if(c === 9 /* \t */)
-            {
-                core.error("`description` cannot contain tab character");
-                return;
-            }
-            else
-            {
-                core.error("`description` cannot contain non-printable character (first 32 ASCII characters) - found character " + c);
-                return;
-            }
-        }
-    }
+    validateNonPrintCharacter('`description`', description);
 }
 function checkWebsite(website)
 {
@@ -225,29 +208,7 @@ function checkWebsite(website)
     if(website.startsWith("http://"))
         core.warning("Consider using `https://` instead of `http://` for `website`");
 
-    for(let i = 0; i < website.length; i++)
-    {
-        const c = website.charCodeAt(i);
-        if(c < 32 /* space character */)
-        {
-            if(c === 13 /* \r */ || c === 10 /* \n */)
-            {
-                core.error("`website` cannot contain a new line");
-                return;
-            }
-            else if(c === 9 /* \t */)
-            {
-                core.error("`website` cannot contain tab character");
-                return;
-            }
-            else
-            {
-                core.error("`website` cannot contain non-printable character (first 32 ASCII characters) - found character " + c);
-                return;
-            }
-        }
-    }
-
+    validateNonPrintCharacter('`website`', website);
 
     if(website.includes('voxelite.net'))
     {
@@ -282,28 +243,7 @@ function checkAuthor(author)
     if(author.indexOf("  ") !== -1)
         core.warning("`author` should not contain multiple consecutive space characters");
 
-    for(let i = 0; i < author.length; i++)
-    {
-        const c = author.charCodeAt(i);
-        if(c < 32 /* space character */)
-        {
-            if(c === 13 /* \r */ || c === 10 /* \n */)
-            {
-                core.error("`author` cannot contain a new line");
-                return;
-            }
-            else if(c === 9 /* \t */)
-            {
-                core.error("`author` cannot contain tab character");
-                return;
-            }
-            else
-            {
-                core.error("`author` cannot contain non-printable character (first 32 ASCII characters) - found character " + c);
-                return;
-            }
-        }
-    }
+    validateNonPrintCharacter('`author`', author);
 
     if(author === 'vl' || author === 'voxelite')
     {
@@ -337,28 +277,7 @@ function checkPermission(permission)
 
     //TODO Check against list of known permissions
 
-    for(let i = 0; i < permission.length; i++)
-    {
-        const c = permission.charCodeAt(i);
-        if(c < 32 /* space character */)
-        {
-            if(c === 13 /* \r */ || c === 10 /* \n */)
-            {
-                core.error("`permissions` item cannot contain a new line");
-                return;
-            }
-            else if(c === 9 /* \t */)
-            {
-                core.error("`permissions` item cannot contain tab character");
-                return;
-            }
-            else
-            {
-                core.error("`permissions` item cannot contain non-printable character (first 32 ASCII characters) - found character " + c);
-                return;
-            }
-        }
-    }
+    validateNonPrintCharacter('`permission`', permission);
 
     {
         const regex = /^([a-z]([_a-z0-9]?[a-z0-9])*)(\.([a-z]([_a-z0-9]?[a-z0-9])*))*$/
@@ -373,6 +292,11 @@ function checkPermission(permission)
 try
 {
     const filename = core.getInput('file');
+    if(!fs.existsSync(filename))
+    {
+        core.error("Input file not found");
+        return;
+    }
 
     fs.readFile(
         filename,
@@ -386,76 +310,60 @@ try
                 const json = JSON.parse(data);
 
                 // api_version
-                {
-                    if(!json.hasOwnProperty("api_version"))
-                        core.error('Missing `api_version`');
-                    else
-                        checkApiVersion(json['api_version']);
-                }
+                if(!json.hasOwnProperty("api_version"))
+                    core.error('Missing `api_version`');
+                else
+                    checkApiVersion(json['api_version']);
                 // codename
+                if(!json.hasOwnProperty("codename"))
+                    core.error('Missing `codename`');
+                else
                 {
-                    if(!json.hasOwnProperty("codename"))
-                        core.error('Missing `codename`');
-                    else
-                    {
-                        checkCodename(json['codename']);
-                        core.setOutput('codename', json['codename']);
-                    }
+                    checkCodename(json['codename']);
+                    core.setOutput('codename', json['codename']);
                 }
                 // version
+                if(!json.hasOwnProperty("version"))
+                    core.error('Missing `version`');
+                else
                 {
-                    if(!json.hasOwnProperty("version"))
-                        core.error('Missing `version`');
-                    else
-                    {
-                        checkVersion(json['version']);
-                        core.setOutput('version', json['version']);
-                    }
+                    checkVersion(json['version']);
+                    core.setOutput('version', json['version']);
                 }
                 // name
-                {
-                    if(!json.hasOwnProperty("name"))
-                        core.warning('Missing `name`, `codename` will be used instead');
-                    else
-                        checkName(json['name']);
-                }
+                if(!json.hasOwnProperty("name"))
+                    core.warning('Missing `name`, `codename` will be used instead');
+                else
+                    checkName(json['name']);
                 // description
-                {
-                    if(json.hasOwnProperty("description"))
-                        checkDescription(json['description']);
-                }
+                if(json.hasOwnProperty("description"))
+                    checkDescription(json['description']);
                 // website
-                {
-                    if(json.hasOwnProperty("website"))
-                        checkWebsite(json['website']);
-                }
+                if(json.hasOwnProperty("website"))
+                    checkWebsite(json['website']);
                 // author
+                if(json.hasOwnProperty("author"))
                 {
-                    if(json.hasOwnProperty("author"))
+                    const jsonAuthor = json["author"];
+                    if(typeof jsonAuthor === "string")
+                        checkAuthor(jsonAuthor)
+                    else if(Array.isArray(jsonAuthor) && jsonAuthor.every(item => typeof item === "string"))
                     {
-                        const jsonAuthor = json["author"];
-                        if(typeof jsonAuthor === "string")
-                            checkAuthor(jsonAuthor)
-                        else if(Array.isArray(jsonAuthor) && jsonAuthor.every(item => typeof item === "string"))
-                        {
-                            jsonAuthor.forEach((author) => checkAuthor(author));
-                        }
-                        else
-                            console.error("Unsupported data type for `author` - use a string or an array of strings")
+                        jsonAuthor.forEach((author) => checkAuthor(author));
                     }
+                    else
+                        console.error("Unsupported data type for `author` - use a string or an array of strings")
                 }
                 // permissions
+                if(json.hasOwnProperty("permissions"))
                 {
-                    if(json.hasOwnProperty("permissions"))
+                    const jsonPermissions = json["permissions"];
+                    if(Array.isArray(jsonPermissions) && jsonPermissions.every(item => typeof item === "string"))
                     {
-                        const jsonPermissions = json["permissions"];
-                        if(Array.isArray(jsonPermissions) && jsonPermissions.every(item => typeof item === "string"))
-                        {
-                            jsonPermissions.forEach((permission) => checkPermission(permission));
-                        }
-                        else
-                            console.error("Unsupported data type for `permissions` - use an array of strings")
+                        jsonPermissions.forEach((permission) => checkPermission(permission));
                     }
+                    else
+                        console.error("Unsupported data type for `permissions` - use an array of strings")
                 }
             }
         }
