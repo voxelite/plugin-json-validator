@@ -1,33 +1,40 @@
 on: [push]
 
 jobs:
-  plugin_json:
+  minimal:
     runs-on: ubuntu-latest
-    name: Test some plugin.json files
+    name: Minimal plugin.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Test minimal.json
-        id: minimal_json
+        id: plugin
         uses: ./
         with:
           file: test/minimal.json
 
-      - name: Print minimal.json info
+      - name: Plugin info
         shell: bash
         run: |
-          echo "Codename: ${{steps.minimal_json.outputs.codename}}"
-          echo "Version: ${{steps.minimal_json.outputs.version}}"
+          echo "Codename: ${{steps.plugin.outputs.codename}}"
+          echo "Version: ${{steps.plugin.outputs.version}}"
 
-      - name: Test full.json
-        id: full_json
+  full:
+    runs-on: ubuntu-latest
+    name: Full plugin.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: plugin.json
+        id: plugin
         uses: ./
         with:
           file: test/full.json
 
-      - name: Print full.json info
+      - name: Plugin info
         shell: bash
         run: |
-          echo "Codename: ${{steps.full_json.outputs.codename}}"
-          echo "Version: ${{steps.full_json.outputs.version}}"
+          echo "Codename: ${{steps.plugin.outputs.codename}}"
+          echo "Version: ${{steps.plugin.outputs.version}}"
