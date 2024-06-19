@@ -24,6 +24,28 @@ Causes the validator to not check against official names.
 Do not use this unless you are an official plugin.
 It does not give you any advantage, just ignores checks for official-sounding names.
 
+## Outputs
+
+### `codename`
+
+Parsed codename from the plugin.
+
+### `version`
+
+Parsed version from the plugin.
+
+### `alias`
+
+Comma-separated list of codenames.
+
+### `depends`
+
+Plugins this one directly depends on.
+
+### `other_plugins`
+
+Other plugins mentioned in plugin relations like `depends` or `recommends`.
+
 ## Example usage
 
 ```yaml

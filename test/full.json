@@ -1,11 +1,30 @@
 {
   "api_version": 1,
   "codename": "full_plugin",
-  "name": "Full Plugin",
+  "alias": [ "plugin_full", "full_example_plugin" ],
+  "name": "Full Example Plugin",
   "description": "Example for all available fields in Voxelite's plugin.json",
   "version": "0.1.0",
   "author": [ "me", "myself", "and I" ],
   "website": "https://example.com",
+  "depends": {
+    "a": ">=1.0",
+    "b": "<1.2.3"
+  },
+  "recommends": {
+    "a": ">=1.1"
+  },
+  "suggests": {
+    "a": ">=1.2",
+    "c": ">2"
+  },
+  "breaks": {
+    "ac": ">=1.0"
+  },
+  "replaces": {
+    "zzz": "",
+    "abc": "1.2"
+  },
   "permissions": [
     "network.http",
     "lua_sandbox",

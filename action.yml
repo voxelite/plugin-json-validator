@@ -13,6 +13,12 @@ outputs:
     description: 'Plugin codename'
   version:
     description: 'Plugin version'
+  alias:
+    description: 'Alternative plugin codenames separated by a comma'
+  depends:
+    description: 'Comma-separated plugins this one directly depends on'
+  other_plugins:
+    description: 'Comma-separated plugins mentioned in plugin relation fields'
 runs:
   using: 'node20'
   main: 'index.js'

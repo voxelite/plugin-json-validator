@@ -3,28 +3,12 @@ name: Test behaviour
 on: [push]
 
 jobs:
-  minimal:
-    runs-on: ubuntu-latest
-    name: Minimal plugin.json
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Test minimal.json
-        id: plugin
-        uses: ./
-        with:
-          file: test/minimal.json
-
-      - name: Plugin info
-        shell: bash
-        run: |
-          echo "Codename: ${{steps.plugin.outputs.codename}}"
-          echo "Version: ${{steps.plugin.outputs.version}}"
-
   full:
     runs-on: ubuntu-latest
-    name: Full plugin.json
+    strategy:
+      matrix:
+        plugin_file: [ 'minimal.json', 'full.json' ]
+    name: ${{ matrix.plugin_file }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,10 +17,12 @@ jobs:
         id: plugin
         uses: ./
         with:
-          file: test/full.json
+          file: 'test/${{ matrix.plugin_file }}'
 
       - name: Plugin info
         shell: bash
         run: |
           echo "Codename: ${{steps.plugin.outputs.codename}}"
           echo "Version: ${{steps.plugin.outputs.version}}"
+          echo "Alias: ${{steps.plugin.outputs.alias}}"
+          echo "Other Plugins: ${{steps.plugin.outputs.other_plugins}}"

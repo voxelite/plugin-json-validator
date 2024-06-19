@@ -28,26 +28,26 @@ function checkApiVersion(api_version)
             break;
     }
 }
-function checkCodename(codename)
+function validateCodename(field, value)
 {
-    if(typeof codename !== "string")
+    if(typeof value !== "string")
     {
-        core.error("`codename` must be a string");
+        core.error(field + " must be a string");
         return;
     }
 
-    if(codename.length === 0)
+    if(value.length === 0)
     {
-        core.error("`codename` cannot be empty");
+        core.error(field + " cannot be empty");
         return;
     }
-    else if(codename.length < 2)
+    else if(value.length < 2)
     {
-        core.error("`codename` must be at least 2 characters");
+        core.error(field + " must be at least 2 characters");
         return;
     }
-    else if(codename.length < 8)
-        core.warning("`codename` should be at least 8 characters");
+    else if(value.length < 8)
+        core.warning(field + " should be at least 8 characters");
 
     {
         // - Only alphanumeric characters
@@ -56,19 +56,56 @@ function checkCodename(codename)
         // - No number at the beginning (but may be at the end)
         const regex_req = /^[a-zA-Z]([_a-zA-Z0-9]?[a-zA-Z0-9])*$/;
         const regex_min = /^[a-z]([_a-z0-9]?[a-z0-9])*$/;
-        if(!regex_req.test(codename))
+        if(!regex_req.test(value))
         {
-            core.error("`codename` does not match required format - only alphanumeric characters with optional underscore");
+            core.error(field + " does not match required format - only alphanumeric characters with optional underscore");
             return;
         }
-        else if(!regex_min.test(codename))
-            core.warning("`codename` does not match expected format - only lowercase letters, numbers and optional underscores");
+        else if(!regex_min.test(value))
+            core.warning(field + " does not match expected format - only lowercase letters, numbers and optional underscores");
     }
 
-    if(codename.startsWith('vl_') || codename.startsWith('VL_') || codename.startsWith('voxelite_') || codename.startsWith('VOXELITE_'))
+    if(value.startsWith('vl_') || value.startsWith('VL_') || value.startsWith('voxelite_') || value.startsWith('VOXELITE_'))
     {
         if(!voxeliteOfficial)
-            core.warning("It looks like you are using `codename` similar to official Voxelite ones, please choose a different prefix");
+            core.warning("It looks like you are using " + field + " similar to official Voxelite ones, please choose a different prefix");
+    }
+}
+function checkCodename(codename)
+{
+    validateCodename("`codename`", codename);
+}
+function checkAlias(alias)
+{
+    validateCodename(`alias '${alias}'`, alias);
+}
+function checkAliases(alias)
+{
+    switch(typeof alias)
+    {
+        case "string":
+        {
+            checkAlias(alias);
+            return [ alias ];
+        }
+        case "object":
+        {
+            if(Array.isArray(alias) && alias.every(item => typeof item === "string"))
+            {
+                alias.forEach(value => {
+                   checkAlias(value);
+                });
+                return alias;
+            }
+            else
+            {
+                core.error("`alias` should be a string or an array");
+                return [];
+            }
+        }
+        default:
+            core.error("`alias` should be a string or an array");
+            return [];
     }
 }
 function validateNonPrintCharacter(field, value)
@@ -288,6 +325,40 @@ function checkPermission(permission)
         }
     }
 }
+function checkPluginRelations(field, value, allowRelative)
+{
+    if(typeof value == "object" && Object.keys(value).every(item => typeof item === "string") && Object.values(value).every(item => typeof item === "string"))
+    {
+        const versionRegex = /^([0-9]+(\.[0-9]+){0,2})?$/
+
+        let pluginNames = new Set();
+        Object.keys(value).forEach(key => {
+            let keyValue = value[key];
+
+            validateCodename(`${field} plugin`, key);
+            pluginNames.add(key);
+
+            // Validate version in `value` with `allowRelative` option
+            if(allowRelative)
+            {
+                if(keyValue.startsWith('<') || keyValue.startsWith('>') || keyValue.startsWith('='))
+                    keyValue = keyValue.substring(1);
+                if(keyValue.startsWith('<=') || keyValue.startsWith('>='))
+                    keyValue = keyValue.substring(2);
+            }
+            if(!versionRegex.test(keyValue))
+                core.error("Invalid version string: " + keyValue);
+
+            //TODO Check for colliding dependencies (same plugin but incompatible versions)
+        });
+        return pluginNames;
+    }
+    else
+    {
+        core.error(field + " plugin should be a string or an array");
+        return new Set();
+    }
+}
 
 try
 {
@@ -321,6 +392,12 @@ try
                 {
                     checkCodename(json['codename']);
                     core.setOutput('codename', json['codename']);
+                }
+                // alias
+                if(json.hasOwnProperty("alias"))
+                {
+                    const alias = checkAliases(json['alias']);
+                    core.setOutput('alias', alias.join(','));
                 }
                 // version
                 if(!json.hasOwnProperty("version"))
@@ -364,6 +441,33 @@ try
                     }
                     else
                         console.error("Unsupported data type for `permissions` - use an array of strings")
+                }
+                // Relations with other plugins
+                {
+                    let mentionedPlugins = new Set();
+                    if(json.hasOwnProperty("depends"))
+                    {
+                        checkPluginRelations("`depends`", json["depends"], true).forEach(item => mentionedPlugins.add(item));
+                        core.setOutput("depends", Array.from(mentionedPlugins).join(','));
+                    }
+                    if(json.hasOwnProperty("recommends"))
+                    {
+                        checkPluginRelations("`recommends`", json["recommends"], true).forEach(item => mentionedPlugins.add(item));
+                    }
+                    if(json.hasOwnProperty("suggests"))
+                    {
+                        checkPluginRelations("`suggests`", json["suggests"], true).forEach(item => mentionedPlugins.add(item));
+                    }
+                    if(json.hasOwnProperty("breaks"))
+                    {
+                        checkPluginRelations("`breaks`", json["breaks"], true).forEach(item => mentionedPlugins.add(item));
+                    }
+                    if(json.hasOwnProperty("replaces"))
+                    {
+                        checkPluginRelations("`replaces`", json["replaces"], false).forEach(item => mentionedPlugins.add(item));
+                    }
+
+                    core.setOutput("other_plugins", Array.from(mentionedPlugins).join(','));
                 }
             }
         }
